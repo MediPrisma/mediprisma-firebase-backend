@@ -47,6 +47,7 @@ describe("Gemini owner-funded access", () => {
 
   it.each([
     ["gemini-3.8-flash", "gemini-3.8-flash"],
+    ["gemini-4-hydrogen", "gemini-4-hydrogen"],
     ["gemini-3.1-pro-preview", "gemini-3.1-flash-lite"],
   ])("routes legacy %s requests to %s", async (model, expectedModel) => {
     post.mockResolvedValueOnce({
@@ -71,6 +72,8 @@ describe("Gemini owner-funded access", () => {
   it.each([
     ["gemini-3.8-flash", "gemini-3.8-flash", false],
     ["gemini-3.8-flash", "gemini-3.8-flash", true],
+    ["gemini-4-hydrogen", "gemini-4-hydrogen", false],
+    ["gemini-4-hydrogen", "gemini-4-hydrogen", true],
     ["gemini-3.1-pro-preview", "gemini-3.1-flash-lite", false],
     ["gemini-3.1-pro-preview", "gemini-3.1-flash-lite", true],
   ])("routes native %s to %s (stream=%s)", async (model, expectedModel, stream) => {

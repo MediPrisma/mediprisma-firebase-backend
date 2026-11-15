@@ -14,7 +14,9 @@ export const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
 export const ALLOWED_GEMINI_MODEL_IDS = new Set<string>([
   "gemini-3.1-flash-lite",
   "gemini-3-flash-preview",
+  // Kept while open app tabs still send the id they loaded with.
   "gemini-3.8-flash",
+  "gemini-4-hydrogen",
 ]);
 export const DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
