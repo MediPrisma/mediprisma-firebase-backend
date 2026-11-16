@@ -56,20 +56,20 @@ describe("OpenAI Responses proxy policy", () => {
     jest.restoreAllMocks();
   });
 
-  it("accepts Luna Responses payloads and rejects other GPT-5.6 models", () => {
+  it("accepts Luna Responses payloads and rejects other premium models", () => {
     expect(isOpenAiResponsesBody({
-      model: "gpt-5.6-luna",
+      model: "gpt-6-luna",
       input: [{role: "user", content: "hello"}],
     })).toBe(true);
     expect(isOpenAiResponsesBody({
-      model: "gpt-5.6-terra",
+      model: "gpt-6.1-terra",
       input: [{role: "user", content: "hello"}],
     })).toBe(false);
   });
 
   it("keeps supported Responses fields, strips unknown fields, and disables storage", () => {
     expect(sanitizeResponsesPayload({
-      model: "gpt-5.6-luna",
+      model: "gpt-6-luna",
       input: [{role: "user", content: "hello"}],
       max_output_tokens: 2048,
       stream: true,
@@ -77,14 +77,14 @@ describe("OpenAI Responses proxy policy", () => {
       metadata: {patient: "must-not-pass"},
       unknown_option: true,
     })).toEqual({
-      model: "gpt-5.6-luna",
+      model: "gpt-6-luna",
       input: [{role: "user", content: "hello"}],
       max_output_tokens: 2048,
       stream: true,
       store: false,
     });
     expect(() => sanitizeResponsesPayload({
-      model: "gpt-5.6-sol",
+      model: "gpt-6.1-sol",
       input: "hello",
     })).toThrow("not proxy-eligible");
   });
@@ -118,7 +118,7 @@ describe("OpenAI Responses proxy policy", () => {
     const res = mockResponse();
 
     await handleOpenAiResponses({
-      model: "gpt-5.6-luna",
+      model: "gpt-6-luna",
       input: [{role: "user", content: "hello"}],
       stream: true,
     }, res as never, post as never);
@@ -141,7 +141,7 @@ describe("OpenAI Responses proxy policy", () => {
     const res = mockResponse();
 
     await handleOpenAiResponses({
-      model: "gpt-5.6-luna",
+      model: "gpt-6-luna",
       input: [{role: "user", content: "hello"}],
       stream: true,
     }, res as never, post as never);
