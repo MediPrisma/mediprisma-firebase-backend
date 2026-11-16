@@ -14,8 +14,12 @@ const ANTHROPIC_VERSION = "2023-06-01";
 
 // Proxy tier: only the cheapest Claude. Stronger models require the user's
 // own key in the app (never proxied).
-const ALLOWED_CLAUDE_MODELS = new Set(["claude-haiku-4-5-20251001"]);
-const DEFAULT_CLAUDE_MODEL = "claude-haiku-4-5-20251001";
+const ALLOWED_CLAUDE_MODELS = new Set([
+  "claude-haiku-5-5",
+  // Compatibility for already-open app tabs.
+  "claude-haiku-4-5-20251001",
+]);
+const DEFAULT_CLAUDE_MODEL = "claude-haiku-5-5";
 
 export const handleClaudeChat = async (
   req: Request,
