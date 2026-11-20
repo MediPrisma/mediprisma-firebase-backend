@@ -1,4 +1,4 @@
-// Server copy of the app's identifier scan (medical-note-smart-on-fhir
+// Server copy of the app's identifier scan (mediprisma-app
 // features/lab-data-report/utils/identifier-scan.ts). The rules are the same
 // on both sides and both test suites share the same vectors — change them
 // together.
