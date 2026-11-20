@@ -1,5 +1,5 @@
 // Strict validation of a lab-data problem report (schemaVersion 1). Mirrors
-// the app's wire contract in medical-note-smart-on-fhir
+// the app's wire contract in mediprisma-app
 // features/lab-data-report/types.ts — change both together.
 //
 // Anything outside the contract is rejected rather than stored: an unknown
@@ -190,7 +190,7 @@ const resultString = (
 };
 
 // The app's cumulative-report panels — LAB_CATEGORIES ids in
-// medical-note-smart-on-fhir src/shared/utils/lab-categories.ts. A panel id
+// mediprisma-app src/shared/utils/lab-categories.ts. A panel id
 // reaches the notice mail, so only these travel; anything else is stored as
 // "unknown" and counted (a panel the app adds later still reports, but no
 // free text can ride along in this field).

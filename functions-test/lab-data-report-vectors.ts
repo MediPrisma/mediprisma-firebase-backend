@@ -1,6 +1,6 @@
 // Shared vectors for the lab-data report identifier scan — a copy of the
 // app's __tests__/features/lab-data-report/identifier-scan-vectors.ts in
-// medical-note-smart-on-fhir. Keep the two identical.
+// mediprisma-app. Keep the two identical.
 export const ROW_VECTORS: ReadonlyArray<readonly [string, string | null]> = [
   // identifiers
   ['A123456789', 'national-id'],

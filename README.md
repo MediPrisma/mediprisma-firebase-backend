@@ -192,7 +192,7 @@ firebase deploy --only functions:dev                    # 整個 dev 組
 
 ### 檢驗資料問題回報 contract（`submitLabDataReport`）
 
-App 端「回報檢驗資料問題」（medical-note-smart-on-fhir `features/lab-data-report/`，隱私政策 §2.10）逐列預覽並二次確認後送出。沿用既有 header（`Content-Type: application/json`、`Authorization: Bearer <Firebase ID token>`，匿名可、`X-Firebase-AppCheck`），**不新增 header**，所以不需要先改 CORS allowlist。
+App 端「回報檢驗資料問題」（mediprisma-app `features/lab-data-report/`，隱私政策 §2.10）逐列預覽並二次確認後送出。沿用既有 header（`Content-Type: application/json`、`Authorization: Bearer <Firebase ID token>`，匿名可、`X-Firebase-AppCheck`），**不新增 header**，所以不需要先改 CORS allowlist。
 
 - 正式組 CORS 只放 `mediprisma.tw`、`voho0000.github.io`（與 Gateway 同一份 `ALLOWED_ORIGINS`／預設清單）；App Check 依 `APPCHECK_ENFORCE`。
 - 驗證：body ≤ 4 MB、schemaVersion 1 嚴格 schema（未知欄位一律 400）、最多 3,000 列（整位病人的累積報告檢驗；2026-09-27 真實資料最多約 1,400 列）；app 與此處共用同一套身分資料樣式（`services/lab-data-report/identifier-scan.ts` ↔ app `features/lab-data-report/utils/identifier-scan.ts`，兩邊測試共用同一組 vectors）。來源字串命中就丟掉並計數；說明欄命中則 400 `description-identifier:<kinds>`。
