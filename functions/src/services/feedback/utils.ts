@@ -1,3 +1,5 @@
+import type {FeedbackRequest} from "./types";
+
 /**
  * HTML-escape a value before interpolating into the email template.
  * Every request field is attacker-controlled.
@@ -15,7 +17,7 @@ export function escapeHtml(value: unknown): string {
 
 // Badge CSS classes must come from these allowlists, never raw input
 export const ISSUE_TYPES = new Set(
-  ["bug", "ui", "performance", "feature", "other"],
+  ["bug", "ai", "ui", "data", "performance", "privacy", "feature", "other"],
 );
 export const SEVERITIES = new Set(["low", "medium", "high", "critical"]);
 
@@ -27,8 +29,11 @@ export const SEVERITIES = new Set(["low", "medium", "high", "critical"]);
 export function getIssueTypeLabel(type: string): string {
   const labels: Record<string, string> = {
     bug: "功能錯誤 (Bug)",
-    ui: "UI/UX 問題",
-    performance: "效能問題 (Performance)",
+    ai: "AI 回答或臨床解讀問題 (AI Response / Clinical Interpretation)",
+    ui: "介面與操作問題 (UI/UX)",
+    data: "資料顯示問題 (Data)",
+    performance: "速度或穩定性問題 (Performance)",
+    privacy: "病安或隱私疑慮 (Safety / Privacy)",
     feature: "功能建議 (Feature Request)",
     other: "其他 (Other)",
   };
@@ -42,10 +47,10 @@ export function getIssueTypeLabel(type: string): string {
  */
 export function getSeverityLabel(severity: string): string {
   const labels: Record<string, string> = {
-    low: "低 (Low)",
-    medium: "中 (Medium)",
-    high: "高 (High)",
-    critical: "緊急 (Critical)",
+    low: "仍可繼續使用 (Low impact)",
+    medium: "部分操作受影響 (Medium impact)",
+    high: "無法完成工作 (High impact)",
+    critical: "疑似病安或隱私事件 (Safety / Privacy)",
   };
   return labels[severity] || severity;
 }
@@ -58,6 +63,8 @@ export function getSeverityLabel(severity: string): string {
  * @param {string} description - Issue description.
  * @param {string | undefined} steps - Steps to reproduce.
  * @param {object} systemInfo - System information.
+ * @param {number} imageCount - Number of attached screenshots.
+ * @param {string} reportId - User-visible report reference.
  * @return {string} HTML email content.
  */
 export function generateEmailHTML(
@@ -66,14 +73,9 @@ export function generateEmailHTML(
   severity: string,
   description: string,
   steps: string | undefined,
-  systemInfo: {
-    timestamp: string;
-    userAgent: string;
-    screenResolution: string;
-    language: string;
-    currentPath: string;
-    fhirServerUrl: string;
-  },
+  systemInfo: FeedbackRequest["systemInfo"],
+  imageCount = 0,
+  reportId = "unknown",
 ): string {
   const issueTypeLabel = getIssueTypeLabel(issueType);
   const severityLabel = getSeverityLabel(severity);
@@ -120,8 +122,11 @@ export function generateEmailHTML(
       font-weight: 600;
     }
     .badge-bug { background: #fee2e2; color: #991b1b; }
+    .badge-ai { background: #e0e7ff; color: #3730a3; }
     .badge-ui { background: #dbeafe; color: #1e40af; }
+    .badge-data { background: #e0f2fe; color: #075985; }
     .badge-performance { background: #fef3c7; color: #92400e; }
+    .badge-privacy { background: #fee2e2; color: #991b1b; }
     .badge-feature { background: #d1fae5; color: #065f46; }
     .badge-other { background: #e5e7eb; color: #374151; }
     .badge-low { background: #d1fae5; color: #065f46; }
@@ -153,6 +158,9 @@ export function generateEmailHTML(
     
     <div class="content">
       <div class="section">
+        <span class="label">回報編號:</span> ${escapeHtml(reportId)}
+      </div>
+      <div class="section">
         <span class="label">回報者 Email:</span> ${escapeHtml(email)}
       </div>
       
@@ -164,7 +172,7 @@ export function generateEmailHTML(
       </div>
       
       <div class="section">
-        <span class="label">嚴重程度:</span> 
+        <span class="label">影響程度:</span>
         <span class="badge badge-${severityClass}">${
   escapeHtml(severityLabel)
 }</span>
@@ -193,6 +201,13 @@ export function generateEmailHTML(
         ">${escapeHtml(steps)}</div>
       </div>
       ` : ""}
+
+      ${imageCount > 0 ? `
+      <div class="section">
+        <span class="label">圖片附件:</span>
+        ${imageCount} 張（請見郵件附件）
+      </div>
+      ` : ""}
       
       <div class="section">
         <span class="label">系統資訊:</span>
@@ -204,12 +219,41 @@ export function generateEmailHTML(
           <div><strong>螢幕解析度:</strong> ${
   escapeHtml(systemInfo.screenResolution)
 }</div>
+          <div><strong>視窗大小:</strong> ${
+  escapeHtml(systemInfo.viewport ?? "unknown")
+}</div>
+          <div><strong>像素比:</strong> ${
+  escapeHtml(systemInfo.devicePixelRatio ?? "unknown")
+}</div>
+          <div><strong>根字級:</strong> ${
+  escapeHtml(systemInfo.rootFontSize ?? "unknown")
+}</div>
+          <div><strong>主題:</strong> ${
+  escapeHtml(systemInfo.theme ?? "unknown")
+}</div>
+          <div><strong>時區:</strong> ${
+  escapeHtml(systemInfo.timeZone ?? "unknown")
+}</div>
           <div><strong>語言:</strong> ${escapeHtml(systemInfo.language)}</div>
           <div><strong>當前頁面:</strong> ${
   escapeHtml(systemInfo.currentPath)
 }</div>
-          <div><strong>FHIR Server:</strong> ${
-  escapeHtml(systemInfo.fhirServerUrl)
+          <div><strong>當前檢視:</strong> ${
+  escapeHtml(systemInfo.currentView ?? "unknown")
+}</div>
+          <div><strong>FHIR Server origin:</strong> ${
+  escapeHtml(
+    systemInfo.fhirServerOrigin ?? systemInfo.fhirServerUrl ?? "unknown",
+  )
+}</div>
+          <div><strong>應用程式版本:</strong> ${
+  escapeHtml(systemInfo.appVersion ?? "unknown")
+}</div>
+          <div><strong>啟動來源:</strong> ${
+  escapeHtml(systemInfo.launchSource ?? "unknown")
+}</div>
+          <div><strong>站點:</strong> ${
+  escapeHtml(systemInfo.site ?? "unknown")
 }</div>
         </div>
       </div>
@@ -233,6 +277,8 @@ export function generateEmailHTML(
  * @param {string} description - Issue description.
  * @param {string | undefined} steps - Steps to reproduce.
  * @param {object} systemInfo - System information.
+ * @param {number} imageCount - Number of attached screenshots.
+ * @param {string} reportId - User-visible report reference.
  * @return {string} Plain text email content.
  */
 export function generatePlainText(
@@ -241,14 +287,9 @@ export function generatePlainText(
   severity: string,
   description: string,
   steps: string | undefined,
-  systemInfo: {
-    timestamp: string;
-    userAgent: string;
-    screenResolution: string;
-    language: string;
-    currentPath: string;
-    fhirServerUrl: string;
-  },
+  systemInfo: FeedbackRequest["systemInfo"],
+  imageCount = 0,
+  reportId = "unknown",
 ): string {
   const issueTypeLabel = getIssueTypeLabel(issueType);
   const severityLabel = getSeverityLabel(severity);
@@ -260,22 +301,35 @@ export function generatePlainText(
 醫療筆記系統 - 問題回報
 Medical Note System - Issue Report
 
+回報編號: ${reportId}
 回報者 Email: ${email}
 問題類型: ${issueTypeLabel}
-嚴重程度: ${severityLabel}
+影響程度: ${severityLabel}
 
 問題描述:
 ${description}
 
 ${steps ? `重現步驟:\n${steps}\n` : ""}
+${imageCount > 0 ? `圖片附件: ${imageCount} 張（請見郵件附件）\n` : ""}
 
 系統資訊:
 - 時間: ${timestampFormatted}
 - 瀏覽器: ${systemInfo.userAgent}
 - 螢幕解析度: ${systemInfo.screenResolution}
+- 視窗大小: ${systemInfo.viewport ?? "unknown"}
+- 像素比: ${systemInfo.devicePixelRatio ?? "unknown"}
+- 根字級: ${systemInfo.rootFontSize ?? "unknown"}
+- 主題: ${systemInfo.theme ?? "unknown"}
+- 時區: ${systemInfo.timeZone ?? "unknown"}
 - 語言: ${systemInfo.language}
 - 當前頁面: ${systemInfo.currentPath}
-- FHIR Server: ${systemInfo.fhirServerUrl}
+- 當前檢視: ${systemInfo.currentView ?? "unknown"}
+- FHIR Server origin: ${
+  systemInfo.fhirServerOrigin ?? systemInfo.fhirServerUrl ?? "unknown"
+}
+- 應用程式版本: ${systemInfo.appVersion ?? "unknown"}
+- 啟動來源: ${systemInfo.launchSource ?? "unknown"}
+- 站點: ${systemInfo.site ?? "unknown"}
 
 ---
 此郵件由 MediPrisma 系統自動發送
