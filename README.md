@@ -94,6 +94,13 @@ firebase functions:secrets:set ANTHROPIC_API_KEY
 firebase functions:secrets:set RESEND_API_KEY
 ```
 
+Feedback 另需在 Function runtime 設定已驗證的寄件地址與維護者收件地址：
+
+```bash
+FEEDBACK_FROM_EMAIL="MediPrisma <feedback@example.org>"
+FEEDBACK_TO_EMAIL=team@example.org
+```
+
 Secrets 綁在 `setGlobalOptions`，dev 組與正式組共用同一組，無需重複設定。
 `proxyOpenAiCompatibleGateway` 會以 `secrets: []` 覆寫全域設定，不會取得上述 owner-funded keys。
 
@@ -261,6 +268,10 @@ X-Upstream-API-Key: <user-owned provider key>
 - BYO Gateway 另有 `gatewayCount` quota，且 upstream URL 使用精確白名單以避免 SSRF／通用轉送器
 - 一般 proxy 的 App Check（`X-Firebase-AppCheck`）預設為 log-only；正式 BYO Gateway 則個別強制驗證
 - 使用 Firebase Secret Manager 管理 API keys
+- Feedback 驗 Firebase ID token，並以雜湊 uid 做集中式每小時 rate limit，避免院內共用 IP 互相影響
+- Feedback 收／寄件地址由 `FEEDBACK_TO_EMAIL`、`FEEDBACK_FROM_EMAIL` 設定；寄件網域須先在 Resend 驗證
+- Feedback 回傳可供追蹤的 report ID，並把同一 ID 作為 Resend idempotency key，避免逾時重試產生重複郵件
+- Feedback 附圖只在請求期間驗證並作為 Resend 郵件附件；最多三張 JPG／PNG／WebP、解碼後合計 8 MB，不寫入 Storage、Firestore 或 log
 - Firestore 規則確保使用者只能存取自己的資料
 - 共享提示詞支援公開讀取，但只有作者可以修改/刪除
 

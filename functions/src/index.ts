@@ -23,6 +23,8 @@ setGlobalOptions({
     "PERPLEXITY_API_KEY",
     "ANTHROPIC_API_KEY",
     "RESEND_API_KEY",
+    "FEEDBACK_TO_EMAIL",
+    "FEEDBACK_FROM_EMAIL",
   ],
 });
 
